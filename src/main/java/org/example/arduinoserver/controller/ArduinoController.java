@@ -10,31 +10,30 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.UnsupportedEncodingException;
-
 @RestController
 @CrossOrigin(origins = "*")
 public class ArduinoController {
-    @Autowired
-    private ArduinoService arduinoService;
 
-    @GetMapping("/message")
-    public Message getMessage() {
-        return arduinoService.getValueArduino();
-    }
+  @Autowired
+  private ArduinoService arduinoService;
 
-    @PostMapping("/startOperation")
-    public void startOperation() {
-        arduinoService.startOperation();
-    }
+  @GetMapping("/message")
+  public Message getMessage() {
+    return arduinoService.getValueArduino();
+  }
 
-    @PostMapping("/endOperation")
-    public void endOperation(){
-        arduinoService.stopOperation();
-    }
+  @PostMapping("/startOperation")
+  public void startOperation() {
+    arduinoService.startOperation();
+  }
 
-    @GetMapping("/getLogs")
-    public List<Log> getLogs() {
-      return arduinoService.getLogsOperations();
-    }
+  @PostMapping("/endOperation")
+  public void endOperation() {
+    arduinoService.stopOperation();
+  }
+
+  @GetMapping("/getLogs")
+  public List<Log> getLogs() {
+    return arduinoService.getLogsOperations();
+  }
 }

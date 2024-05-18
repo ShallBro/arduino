@@ -24,63 +24,63 @@ import org.springframework.web.filter.CorsFilter;
 @PropertySource("classpath:hibernate.properties")
 public class ConfigureApp {
 
-    private final Environment env;
+  private final Environment env;
 
-    @Autowired
-    public ConfigureApp(Environment env) {
-        this.env = env;
-    }
+  @Autowired
+  public ConfigureApp(Environment env) {
+    this.env = env;
+  }
 
-    private Properties hibernateProperties(){
-        Properties properties = new Properties();
-        properties.put("hibernate.dialect", env.getRequiredProperty("hibernate.dialect"));
-        return properties;
-    }
+  private Properties hibernateProperties() {
+    Properties properties = new Properties();
+    properties.put("hibernate.dialect", env.getRequiredProperty("hibernate.dialect"));
+    return properties;
+  }
 
-    @Bean
-    public ArduinoReader arduinoReader() {
-        return new ArduinoReader();
-    }
+  @Bean
+  public ArduinoReader arduinoReader() {
+    return new ArduinoReader();
+  }
 
-    @Bean
-    public DataSource dataSource(){
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(env.getRequiredProperty("hibernate.driver_class"));
-        dataSource.setUrl(env.getRequiredProperty("hibernate.connection.url"));
-        dataSource.setUsername(env.getRequiredProperty("hibernate.connection.username"));
-        dataSource.setPassword(env.getRequiredProperty("hibernate.connection.password"));
-        return dataSource;
-    }
+  @Bean
+  public DataSource dataSource() {
+    DriverManagerDataSource dataSource = new DriverManagerDataSource();
+    dataSource.setDriverClassName(env.getRequiredProperty("hibernate.driver_class"));
+    dataSource.setUrl(env.getRequiredProperty("hibernate.connection.url"));
+    dataSource.setUsername(env.getRequiredProperty("hibernate.connection.username"));
+    dataSource.setPassword(env.getRequiredProperty("hibernate.connection.password"));
+    return dataSource;
+  }
 
-    @Bean(name="entityManagerFactory")
-    public LocalSessionFactoryBean sessionFactory() {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan("org.example.arduinoserver.entity");
-        sessionFactory.setHibernateProperties(hibernateProperties());
-        return sessionFactory;
-    }
+  @Bean(name = "entityManagerFactory")
+  public LocalSessionFactoryBean sessionFactory() {
+    LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+    sessionFactory.setDataSource(dataSource());
+    sessionFactory.setPackagesToScan("org.example.arduinoserver.entity");
+    sessionFactory.setHibernateProperties(hibernateProperties());
+    return sessionFactory;
+  }
 
-    @Bean
-    public PlatformTransactionManager hibernateTransactionalManager() {
-        HibernateTransactionManager transactionManager = new HibernateTransactionManager();
-        transactionManager.setSessionFactory(sessionFactory().getObject());
-        return transactionManager;
-    }
+  @Bean
+  public PlatformTransactionManager hibernateTransactionalManager() {
+    HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+    transactionManager.setSessionFactory(sessionFactory().getObject());
+    return transactionManager;
+  }
 
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
-        config.addAllowedMethod("*");
-        config.addAllowedHeader("*");
+  @Bean
+  public CorsFilter corsFilter() {
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowCredentials(true);
+    config.addAllowedOriginPattern("*");
+    config.addAllowedMethod("*");
+    config.addAllowedHeader("*");
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
 
-        return new CorsFilter(source);
-    }
+    return new CorsFilter(source);
+  }
 
 
 }

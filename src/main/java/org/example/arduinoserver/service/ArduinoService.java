@@ -1,7 +1,6 @@
 package org.example.arduinoserver.service;
 
 import com.fazecast.jSerialComm.SerialPort;
-import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,9 +9,11 @@ import java.util.Map;
 import org.example.arduinoserver.arduino.ArduinoReader;
 import org.example.arduinoserver.dao.OperationsDAO;
 import org.example.arduinoserver.dao.SensorsDAO;
+import org.example.arduinoserver.dao.ValveDAO;
 import org.example.arduinoserver.entity.OperationsEntity;
 import org.example.arduinoserver.model.Log;
 import org.example.arduinoserver.model.Message;
+import org.example.arduinoserver.model.Test;
 import org.example.arduinoserver.utils.TimeStampUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,9 +32,17 @@ public class ArduinoService {
   @Autowired
   private SensorsDAO sensorsDAO;
 
+  @Autowired
+  private PumpService pumpService;
+
+  @Autowired
+  private ValveService valveService;
+
+
   private final SerialPort serialPort;
   private final Integer DATA_RATE = 500000;
   private final Integer TIME_OUT = 10000;
+
   private OperationsEntity operationsEntity;
 
   public ArduinoService() {
@@ -88,6 +97,9 @@ public class ArduinoService {
     }
     return logList;
   }
+  // Формула для литров 1.2 / logWork
+  // Помпа   1,1,1,1,1,1,1,0, 1,0
+  // Клапан  0, 1
 
   public Message getValueArduino() {
     Timestamp timestampStartSensors = TimeStampUtils.getTimestamp();
@@ -102,6 +114,9 @@ public class ArduinoService {
     message.setPump(Integer.parseInt(switchArray[2]));
     message.setValve(Integer.parseInt(switchArray[3]));
     sensorsDAO.create(timestampStartSensors, timestampStopSensors, operationsEntity, message.getSwitch1(), message.getSwitch2());
+    pumpService.loggingPump(message.getPump(), operationsEntity);
+    valveService.loggingValve(message.getValve(), operationsEntity);
+
     return message;
   }
 
