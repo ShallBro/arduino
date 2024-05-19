@@ -25,17 +25,7 @@ public class ArduinoService {
   private final SerialPort serialPort;
   private final Integer DATA_RATE = 500000;
   private final Integer TIME_OUT = 10000;
-  @Autowired
-  private ArduinoReader arduinoReader;
-  @Autowired
-  private OperationsDAO operationsDAO;
-  @Autowired
-  private SensorsDAO sensorsDAO;
-  @Autowired
-  private PumpService pumpService;
-  @Autowired
-  private ValveService valveService;
-  private OperationsEntity operationsEntity;
+
 
   public ArduinoService() {
     serialPort = SerialPort.getCommPort("COM7");  // Замените "COM7" на ваш COM-порт
@@ -51,6 +41,24 @@ public class ArduinoService {
     ArduinoReader arduinoReader = new ArduinoReader();
     serialPort.addDataListener(arduinoReader);
   }
+  @Autowired
+  private ArduinoReader arduinoReader;
+
+  @Autowired
+  private OperationsDAO operationsDAO;
+
+  @Autowired
+  private SensorsDAO sensorsDAO;
+
+  @Autowired
+  private PumpService pumpService;
+
+  @Autowired
+  private ValveService valveService;
+
+  private OperationsEntity operationsEntity;
+
+  private Message message;
 
   public static String getReceivedMessage() {
     return receivedMessage;
@@ -106,14 +114,14 @@ public class ArduinoService {
     return logList;
   }
 
-  public Message getValueArduino() {
+  public Message getValueArduino(Test test) {
     Timestamp timestampStartSensors = TimeStampUtils.getTimestamp();
-    Message message = new Message();
+    message = new Message();
 //        String resultArduino = getReceivedMessage().replaceAll("\r\n", "");
 //        System.out.println(resultArduino);
 //        String[] switchArray = resultArduino.split(",");
     Timestamp timestampStopSensors = TimeStampUtils.getTimestamp();
-    String[] switchArray = {"2", "1", "3", "4"};
+    String[] switchArray = {"2", "1", test.getPump(), test.getValve()};
     message.setSwitch1(Integer.parseInt(switchArray[0]));
     message.setSwitch2(Integer.parseInt(switchArray[1]));
     message.setPump(Integer.parseInt(switchArray[2]));
@@ -127,6 +135,12 @@ public class ArduinoService {
 
   public void stopOperation() {
     operationsDAO.update(TimeStampUtils.getTimestamp());
+    if (message.getPump() == 1) {
+      pumpService.loggingPump(0, operationsEntity);
+    }
+    if (message.getValve() == 0) {
+      valveService.loggingValve(1, operationsEntity);
+    }
   }
 }
 

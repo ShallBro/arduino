@@ -21,8 +21,8 @@ public class ArduinoController {
   private ArduinoService arduinoService;
 
   @GetMapping("/message")
-  public Message getMessage() {
-    return arduinoService.getValueArduino();
+  public Message getMessage(@RequestBody Test test) {
+    return arduinoService.getValueArduino(test);
   }
 
   @PostMapping("/startOperation")
