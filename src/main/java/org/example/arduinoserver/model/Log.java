@@ -11,4 +11,7 @@ public class Log {
   private Long idOperation;
   private Map<String, Object> operation;
   private List<Map<String, Object>> sensors;
+  private String user;
+  private List<Map<String, Object>> pump;
+  private List<Map<String, Object>> valve;
 }

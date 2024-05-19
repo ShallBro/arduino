@@ -6,8 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Message {
-    private Integer switch1;
-    private Integer switch2;
-    private Integer pump;
-    private Integer valve;
+  private Integer switch1;
+  private Integer switch2;
+  private Integer pump;
+  private Integer valve;
 }

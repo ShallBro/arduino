@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.util.List;
 import org.example.arduinoserver.entity.OperationsEntity;
+import org.example.arduinoserver.model.User;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,16 @@ public class OperationsDAO {
   @Autowired
   private SensorsDAO sensorsDAO;
 
+  @Autowired
+  private PumpDAO pumpDAO;
+
+  @Autowired
+  private ValveDAO valveDAO;
+
   @Transactional
-  public OperationsEntity create(Timestamp timestampStartOperation) {
+  public OperationsEntity create(Timestamp timestampStartOperation, String userName) {
     Session session = sessionFactory.getCurrentSession();
-    OperationsEntity operationsEntity = new OperationsEntity(timestampStartOperation);
+    OperationsEntity operationsEntity = new OperationsEntity(timestampStartOperation, userName);
     session.persist(operationsEntity);
     operationId = operationsEntity.getId();
     return operationsEntity;
@@ -34,7 +41,11 @@ public class OperationsDAO {
   public List<OperationsEntity> get() {
     Session session = sessionFactory.getCurrentSession();
     List<OperationsEntity> operationsEntityList = session.createQuery("FROM OperationsEntity").getResultList();
-    operationsEntityList.forEach(operationsEntity -> operationsEntity.setSensorsEntityList(sensorsDAO.get(operationsEntity)));
+    operationsEntityList.forEach(operationsEntity -> {
+      operationsEntity.setSensorsEntityList(sensorsDAO.get(operationsEntity));
+      operationsEntity.setPumpEntityList(pumpDAO.get(operationsEntity));
+      operationsEntity.setValveEntityList(valveDAO.get(operationsEntity));
+    });
     return operationsEntityList;
   }
 

@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.arduinoserver.model.User;
 
 @Entity
 @Table(name = "operations")
@@ -26,12 +27,21 @@ public class OperationsEntity {
 
   private Timestamp log_end;
 
-  public OperationsEntity(Timestamp logStart) {
+  private String name;
+
+  public OperationsEntity(Timestamp logStart, String name) {
     this.log_start = logStart;
+    this.name = name;
   }
 
   @OneToMany(mappedBy = "operationsEntity")
   private List<SensorsEntity> sensorsEntityList;
+
+  @OneToMany(mappedBy = "operationsEntity")
+  private List<PumpEntity> pumpEntityList;
+
+  @OneToMany(mappedBy = "operationsEntity")
+  private List<ValveEntity> valveEntityList;
 
   public OperationsEntity() {
 

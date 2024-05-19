@@ -9,11 +9,11 @@ import java.util.Map;
 import org.example.arduinoserver.arduino.ArduinoReader;
 import org.example.arduinoserver.dao.OperationsDAO;
 import org.example.arduinoserver.dao.SensorsDAO;
-import org.example.arduinoserver.dao.ValveDAO;
 import org.example.arduinoserver.entity.OperationsEntity;
 import org.example.arduinoserver.model.Log;
 import org.example.arduinoserver.model.Message;
 import org.example.arduinoserver.model.Test;
+import org.example.arduinoserver.model.User;
 import org.example.arduinoserver.utils.TimeStampUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,27 +22,19 @@ import org.springframework.stereotype.Service;
 public class ArduinoService {
 
   private static String receivedMessage;
-
-  @Autowired
-  private ArduinoReader arduinoReader;
-
-  @Autowired
-  private OperationsDAO operationsDAO;
-
-  @Autowired
-  private SensorsDAO sensorsDAO;
-
-  @Autowired
-  private PumpService pumpService;
-
-  @Autowired
-  private ValveService valveService;
-
-
   private final SerialPort serialPort;
   private final Integer DATA_RATE = 500000;
   private final Integer TIME_OUT = 10000;
-
+  @Autowired
+  private ArduinoReader arduinoReader;
+  @Autowired
+  private OperationsDAO operationsDAO;
+  @Autowired
+  private SensorsDAO sensorsDAO;
+  @Autowired
+  private PumpService pumpService;
+  @Autowired
+  private ValveService valveService;
   private OperationsEntity operationsEntity;
 
   public ArduinoService() {
@@ -68,8 +60,8 @@ public class ArduinoService {
     receivedMessage = a;
   }
 
-  public void startOperation() {
-    operationsEntity = operationsDAO.create(TimeStampUtils.getTimestamp());
+  public void startOperation(User user) {
+    operationsEntity = operationsDAO.create(TimeStampUtils.getTimestamp(), user.getUser());
   }
 
   public List<Log> getLogsOperations() {
@@ -77,6 +69,8 @@ public class ArduinoService {
     var operationsEntityList = operationsDAO.get();
     for (OperationsEntity operationsEntityCurrent : operationsEntityList) {
       Log log = new Log();
+      List<Map<String, Object>> valveList = new ArrayList<>();
+      List<Map<String, Object>> pumpList = new ArrayList<>();
       List<Map<String, Object>> sensors = new ArrayList<>();
       operationsEntityCurrent.getSensorsEntityList().forEach(sensorsEntity -> {
         Map<String, Object> sensorsMap = new HashMap<>();
@@ -86,6 +80,17 @@ public class ArduinoService {
         sensorsMap.put("log_end", sensorsEntity.getLog_end().toString());
         sensors.add(sensorsMap);
       });
+      operationsEntityCurrent.getPumpEntityList().forEach(pumpEntity -> {
+        Map<String, Object> pumpsMap = new HashMap<>();
+        pumpsMap.put("log_work", pumpEntity.getLog_work());
+        pumpsMap.put("liters", pumpEntity.getLiters());
+        pumpList.add(pumpsMap);
+      });
+      operationsEntityCurrent.getValveEntityList().forEach(valveEntity -> {
+        Map<String, Object> valvesMap = new HashMap<>();
+        valvesMap.put("log_work", valveEntity.getLog_work());
+        valveList.add(valvesMap);
+      });
       Map<String, Object> operation = new HashMap<>();
       operation.put("log_start", operationsEntityCurrent.getLog_start().toString());
       operation.put("log_work", operationsEntityCurrent.getLog_work());
@@ -93,13 +98,13 @@ public class ArduinoService {
       log.setSensors(sensors);
       log.setOperation(operation);
       log.setIdOperation(operationsEntityCurrent.getId());
+      log.setUser(operationsEntityCurrent.getName());
+      log.setPump(pumpList);
+      log.setValve(valveList);
       logList.add(log);
     }
     return logList;
   }
-  // Формула для литров 1.2 / logWork
-  // Помпа   1,1,1,1,1,1,1,0, 1,0
-  // Клапан  0, 1
 
   public Message getValueArduino() {
     Timestamp timestampStartSensors = TimeStampUtils.getTimestamp();
